@@ -11,9 +11,8 @@ install:
   - pip install pip --upgrade
   - pip install setuptools
   - python setup.py sdist
-  - pip list
   - pip install dist/ga4gh_client*.tar.gz
-  - pip install -r requirements.txt -c constraints.txt
+  - pip install -r requirements.txt -c constraints.txt --upgrade
 # every installable in setup.py's entry_points should be tested here
   - pip list
   - ga4gh_client --version
