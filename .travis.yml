@@ -12,11 +12,8 @@ install:
   - pip install setuptools
   - python setup.py sdist
   - pip install dist/ga4gh_client*.tar.gz
-  - wget https://protobuf.googlecode.com/files/protobuf-2.4.1.tar.gz
-  - tar -xzvf protobuf-2.4.1.tar.gz
-  - pushd protobuf-2.4.1 && ./configure --prefix=/usr && make && sudo make install && popd
-  - pip list
-  - git clone https://github.com/protobuf-c/protobuf-c.git && cd protobuf-c && ./autogen.sh && ./configure && make && sudo make install
+  - lsb_release -a
+  - lshw -C CPU
   - protoc --version
   - pip install -r requirements.txt -c constraints.txt --upgrade --no-cache-dir
 # every installable in setup.py's entry_points should be tested here
