@@ -13,9 +13,8 @@ install:
   - python setup.py sdist
   - pip install dist/ga4gh_client*.tar.gz
   - pip list
-  - which protoc
   - git clone https://github.com/protobuf-c/protobuf-c.git && cd protobuf-c && ./autogen.sh && ./configure && make && sudo make install
-  - which protoc
+  - protoc --version
   - pip install -r requirements.txt -c constraints.txt --upgrade --no-cache-dir
 # every installable in setup.py's entry_points should be tested here
   - pip list
