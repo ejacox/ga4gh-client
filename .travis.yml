@@ -12,6 +12,7 @@ install:
   - pip install setuptools
   - python setup.py sdist
   - pip install dist/ga4gh_client*.tar.gz
+  - pip install protobuf==3.1.0.post1
   - pip list
   - git clone https://github.com/protobuf-c/protobuf-c.git && cd protobuf-c && ./autogen.sh && ./configure && make && sudo make install
   - protoc --version
