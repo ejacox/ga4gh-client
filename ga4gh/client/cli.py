@@ -710,7 +710,7 @@ class SearchContinuousRunner(ContinuousFormatterMixin, AbstractSearchRunner):
         self._output(iterator)
 
     def run(self):
-        if self._continuousSetId is None and not self._parentId:
+        if self._continuousSetId is None:
             for continuousSet in self.getAllContinuousSets():
                 self._run(continuousSet)
         else:
