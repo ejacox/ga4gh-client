@@ -699,7 +699,6 @@ class SearchContinuousRunner(ContinuousFormatterMixin, AbstractSearchRunner):
         super(SearchContinuousRunner, self).__init__(args)
         self._referenceName = args.referenceName
         self._continuousSetId = args.continuousSetId
-        self._parentId = args.parentId
         self._start = args.start
         self._end = args.end
 
