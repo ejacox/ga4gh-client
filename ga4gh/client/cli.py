@@ -705,7 +705,8 @@ class SearchContinuousRunner(ContinuousFormatterMixin, AbstractSearchRunner):
     def _run(self, continuousSetId):
         iterator = self._client.search_continuous(
             start=self._start, end=self._end,
-            reference_name=self._referenceName, parent_id=self._parentId)
+            reference_name=self._referenceName,
+            continuous_set_id=continuousSetId)
         self._output(iterator)
 
     def run(self):
