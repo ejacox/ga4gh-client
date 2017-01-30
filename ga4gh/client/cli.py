@@ -340,7 +340,7 @@ class SearchFeatureSetsRunner(AbstractSearchRunner):
         self._datasetId = args.datasetId
 
     def _run(self, datasetId):
-        iterator = self._client.search_featur_sets(dataset_id=datasetId)
+        iterator = self._client.search_feature_sets(dataset_id=datasetId)
         self._output(iterator)
 
     def run(self):
