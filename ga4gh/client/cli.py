@@ -333,14 +333,14 @@ class SearchVariantAnnotationSetsRunner(AbstractSearchRunner):
 
 class SearchFeatureSetsRunner(AbstractSearchRunner):
     """
-    Runner class for the continuoussets/search method.
+    Runner class for the featuresets/search method.
     """
     def __init__(self, args):
         super(SearchFeatureSetsRunner, self).__init__(args)
         self._datasetId = args.datasetId
 
     def _run(self, datasetId):
-        iterator = self._client.search_continuous_sets(dataset_id=datasetId)
+        iterator = self._client.search_featur_sets(dataset_id=datasetId)
         self._output(iterator)
 
     def run(self):
