@@ -101,16 +101,16 @@ class AbstractClient(object):
         """
         raise NotImplemented()
 
-    def get_bio_sample(self, bio_sample_id):
+    def get_biosample(self, biosample_id):
         """
-        Perform a get request for the given BioSample.
+        Perform a get request for the given Biosample.
 
-        :param str bio_sample_id: The ID of the BioSample
-        :return: The requested BioSample.
-        :rtype: :class:`ga4gh.protocol.BioSample`
+        :param str biosample_id: The ID of the Biosample
+        :return: The requested Biosample.
+        :rtype: :class:`ga4gh.protocol.Biosample`
         """
         return self._run_get_request(
-            "biosamples", protocol.BioSample, bio_sample_id)
+            "biosamples", protocol.Biosample, biosample_id)
 
     def get_individual(self, individual_id):
         """
@@ -274,6 +274,7 @@ class AbstractClient(object):
     def get_rna_quantification_set(self, rna_quantification_set_id):
         """
         Returns the RnaQuantificationSet with the specified ID from the server.
+
         :param str rna_quantification_set_id: The ID of the
             RnaQuantificationSet of interest.
         :return: The RnaQuantificationSet of interest.
@@ -286,6 +287,7 @@ class AbstractClient(object):
     def get_rna_quantification(self, rna_quantification_id):
         """
         Returns the RnaQuantification with the specified ID from the server.
+
         :param str rna_quantification_id: The ID of the RnaQuantification of
             interest.
         :return: The RnaQuantification of interest.
@@ -298,6 +300,7 @@ class AbstractClient(object):
     def get_expression_level(self, expression_level_id):
         """
         Returns the ExpressionLevel with the specified ID from the server.
+
         :param str expression_level_id: The ID of the ExpressionLevel of
             interest.
         :return: The ExpressionLevel of interest.
@@ -529,7 +532,7 @@ class AbstractClient(object):
         return self._run_search_request(
             request, "references", protocol.SearchReferencesResponse)
 
-    def search_call_sets(self, variant_set_id, name=None, bio_sample_id=None):
+    def search_call_sets(self, variant_set_id, name=None, biosample_id=None):
         """
         Returns an iterator over the CallSets fulfilling the specified
         conditions from the specified VariantSet.
@@ -538,7 +541,7 @@ class AbstractClient(object):
             provided variant set.
         :param str name: Only CallSets matching the specified name will
             be returned.
-        :param str bio_sample_id: Only CallSets matching this id will
+        :param str biosample_id: Only CallSets matching this id will
             be returned.
         :return: An iterator over the :class:`ga4gh.protocol.CallSet`
             objects defined by the query parameters.
@@ -546,31 +549,31 @@ class AbstractClient(object):
         request = protocol.SearchCallSetsRequest()
         request.variant_set_id = variant_set_id
         request.name = pb.string(name)
-        request.bio_sample_id = pb.string(bio_sample_id)
+        request.biosample_id = pb.string(biosample_id)
         request.page_size = pb.int(self._page_size)
         return self._run_search_request(
             request, "callsets", protocol.SearchCallSetsResponse)
 
-    def search_bio_samples(self, dataset_id, name=None, individual_id=None):
+    def search_biosamples(self, dataset_id, name=None, individual_id=None):
         """
-        Returns an iterator over the BioSamples fulfilling the specified
+        Returns an iterator over the Biosamples fulfilling the specified
         conditions.
 
         :param str dataset_id: The dataset to search within.
-        :param str name: Only BioSamples matching the specified name will
+        :param str name: Only Biosamples matching the specified name will
             be returned.
-        :param str individual_id: Only BioSamples matching matching this
+        :param str individual_id: Only Biosamples matching matching this
             id will be returned.
-        :return: An iterator over the :class:`ga4gh.protocol.BioSample`
+        :return: An iterator over the :class:`ga4gh.protocol.Biosample`
             objects defined by the query parameters.
         """
-        request = protocol.SearchBioSamplesRequest()
+        request = protocol.SearchBiosamplesRequest()
         request.dataset_id = dataset_id
         request.name = pb.string(name)
         request.individual_id = pb.string(individual_id)
         request.page_size = pb.int(self._page_size)
         return self._run_search_request(
-            request, "biosamples", protocol.SearchBioSamplesResponse)
+            request, "biosamples", protocol.SearchBiosamplesResponse)
 
     def search_individuals(self, dataset_id, name=None):
         """
@@ -580,7 +583,7 @@ class AbstractClient(object):
         :param str dataset_id: The dataset to search within.
         :param str name: Only Individuals matching the specified name will
             be returned.
-        :return: An iterator over the :class:`ga4gh.protocol.BioSample`
+        :return: An iterator over the :class:`ga4gh.protocol.Biosample`
             objects defined by the query parameters.
         """
         request = protocol.SearchIndividualsRequest()
@@ -591,15 +594,15 @@ class AbstractClient(object):
             request, "individuals", protocol.SearchIndividualsResponse)
 
     def search_read_group_sets(
-            self, dataset_id, name=None, bio_sample_id=None):
+            self, dataset_id, name=None, biosample_id=None):
         """
         Returns an iterator over the ReadGroupSets fulfilling the specified
         conditions from the specified Dataset.
 
         :param str name: Only ReadGroupSets matching the specified name
             will be returned.
-        :param str bio_sample_id: Only ReadGroups matching the specified
-            bioSample will be included in the response.
+        :param str biosample_id: Only ReadGroups matching the specified
+            biosample will be included in the response.
         :return: An iterator over the :class:`ga4gh.protocol.ReadGroupSet`
             objects defined by the query parameters.
         :rtype: iter
@@ -607,7 +610,7 @@ class AbstractClient(object):
         request = protocol.SearchReadGroupSetsRequest()
         request.dataset_id = dataset_id
         request.name = pb.string(name)
-        request.bio_sample_id = pb.string(bio_sample_id)
+        request.biosample_id = pb.string(biosample_id)
         request.page_size = pb.int(self._page_size)
         return self._run_search_request(
             request, "readgroupsets", protocol.SearchReadGroupSetsResponse)
@@ -759,14 +762,18 @@ class HttpClient(AbstractClient):
         the :mod:`logging` module. This is :data:`logging.WARNING` by default.
     :param str authentication_key: The authentication key provided by the
         server after logging in.
+    :param str id_token: The Auth0 id_token key provided by the
+        server after logging in.
     """
 
     def __init__(
             self, url_prefix, logLevel=logging.WARNING,
-            authentication_key=None):
+            authentication_key=None,
+            id_token=None):
         super(HttpClient, self).__init__(logLevel)
         self._url_prefix = url_prefix
         self._authentication_key = authentication_key
+        self._id_token = id_token
         self._session = requests.Session()
         self._setup_http_session()
         requests_log = logging.getLogger("requests.packages.urllib3")
@@ -778,6 +785,9 @@ class HttpClient(AbstractClient):
         Sets up the common HTTP session parameters used by requests.
         """
         headers = {"Content-type": "application/json"}
+        if (self._id_token):
+            headers.update({"authorization": "Bearer {}".format(
+                self._id_token)})
         self._session.headers.update(headers)
         # TODO is this unsafe????
         self._session.verify = False
@@ -848,7 +858,7 @@ class LocalClient(AbstractClient):
             "readgroupsets": self._backend.runGetReadGroupSet,
             "readgroups": self._backend.runGetReadGroup,
             "variantannotationsets": self._backend.runGetVariantAnnotationSet,
-            "biosamples": self._backend.runGetBioSample,
+            "biosamples": self._backend.runGetBiosample,
             "individuals": self._backend.runGetIndividual,
             "rnaquantificationsets": self._backend.runGetRnaQuantificationSet,
             "rnaquantifications": self._backend.runGetRnaQuantification,
@@ -868,7 +878,7 @@ class LocalClient(AbstractClient):
             "variantannotations": self._backend.runSearchVariantAnnotations,
             "variantannotationsets":
                 self._backend.runSearchVariantAnnotationSets,
-            "biosamples": self._backend.runSearchBioSamples,
+            "biosamples": self._backend.runSearchBiosamples,
             "individuals": self._backend.runSearchIndividuals,
             "featurephenotypeassociations":
                 self._backend.runSearchGenotypePhenotypes,

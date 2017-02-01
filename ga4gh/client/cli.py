@@ -40,7 +40,6 @@ def addVersionArgument(parser):
     parser.add_argument(
         "--version", version=versionString, action="version")
 
-
 ###############
 # Client
 ###############
@@ -64,8 +63,12 @@ class AbstractQueryRunner(object):
     """
     def __init__(self, args):
         self._key = args.key
+        self._auth0_token = args.auth0_token
         self._client = client.HttpClient(
-            args.baseUrl, verbosityToLogLevel(args.verbose), self._key)
+            args.baseUrl,
+            verbosityToLogLevel(args.verbose),
+            self._key,
+            self._auth0_token)
 
 
 class FormattedOutputRunner(AbstractQueryRunner):
@@ -253,18 +256,18 @@ class SearchVariantSetsRunner(AbstractSearchRunner):
             self._run(self._datasetId)
 
 
-class SearchBioSamplesRunner(AbstractSearchRunner):
+class SearchBiosamplesRunner(AbstractSearchRunner):
     """
     Runner class for the biosamples/search method.
     """
     def __init__(self, args):
-        super(SearchBioSamplesRunner, self).__init__(args)
+        super(SearchBiosamplesRunner, self).__init__(args)
         self._datasetId = args.datasetId
         self._individualId = args.individualId
         self._name = args.name
 
     def _run(self, datasetId):
-        iterator = self._client.search_bio_samples(
+        iterator = self._client.search_biosamples(
             datasetId,
             name=self._name,
             individual_id=self._individualId)
@@ -288,7 +291,7 @@ class SearchIndividualsRunner(AbstractSearchRunner):
         self._name = args.name
 
     def _run(self, datasetId):
-        iterator = self._client.search_bio_samples(
+        iterator = self._client.search_biosamples(
             datasetId,
             name=self._name)
         self._output(iterator)
@@ -481,7 +484,9 @@ class VariantFormatterMixin(object):
             print("\t", end="")
             for c in variant.calls:
                 print(
-                    c.call_set_id, c.genotype, c.genotype_likelihood, c.info,
+                    c.call_set_id,
+                    c.genotype.__str__().replace('\n', ''),
+                    c.genotype_likelihood, c.info,
                     c.phaseset, sep=":", end="\t")
             print()
 
@@ -735,9 +740,9 @@ class SearchRnaQuantificationsRunner(AbstractSearchRunner):
             print(
                 rnaQuant.id, rnaQuant.description, rnaQuant.name,
                 sep="\t", end="\t")
-            for featureSet in rnaQuant.featureSetIds:
+            for featureSet in rnaQuant.feature_set_ids:
                 print(featureSet, sep=",", end="\t")
-            for readGroup in rnaQuant.readGroupIds:
+            for readGroup in rnaQuant.read_group_ids:
                 print(readGroup, sep=",", end="")
             print()
 
@@ -765,7 +770,7 @@ class SearchExpressionLevelsRunner(AbstractSearchRunner):
         for expression in expressionObjs:
             print(
                 expression.id, expression.expression, expression.name,
-                expression.isNormalized, expression.rawReadCount,
+                expression.is_normalized, expression.raw_read_count,
                 expression.score, expression.units, sep="\t", end="\t")
             print()
 
@@ -836,13 +841,13 @@ class GetReadGroupRunner(AbstractGetRunner):
         self._method = self._client.get_read_group
 
 
-class GetBioSampleRunner(AbstractGetRunner):
+class GetBiosampleRunner(AbstractGetRunner):
     """
     Runner class for the references/{id} method
     """
     def __init__(self, args):
-        super(GetBioSampleRunner, self).__init__(args)
-        self._method = self._client.getBioSample
+        super(GetBiosampleRunner, self).__init__(args)
+        self._method = self._client.getBiosample
 
 
 class GetIndividualRunner(AbstractGetRunner):
@@ -1191,9 +1196,9 @@ def addIndividualIdArgument(parser):
         help="The ID of the individual")
 
 
-def addBioSampleIdArgument(parser):
+def addBiosampleIdArgument(parser):
     parser.add_argument(
-        "--bioSampleId", default=None,
+        "--biosampleId", default=None,
         help="The ID of the biosample")
 
 
@@ -1204,6 +1209,9 @@ def addClientGlobalOptions(parser):
     parser.add_argument(
         "--key", "-k", default='invalid',
         help="Auth Key. Found on server index page.")
+    parser.add_argument(
+        "--auth0-token", "-t", default=None,
+        help="A token generated using Auth0 login.")
     addDisableUrllibWarningsArgument(parser)
     addVersionArgument(parser)
 
@@ -1289,10 +1297,10 @@ def addFeatureSetsGetParser(subparsers):
     addGetArguments(parser)
 
 
-def addBioSamplesGetParser(subparsers):
+def addBiosamplesGetParser(subparsers):
     parser = cli.addSubparser(
         subparsers, "biosamples-get", "Get a biosample by ID")
-    parser.set_defaults(runner=GetBioSampleRunner)
+    parser.set_defaults(runner=GetBiosampleRunner)
     addGetArguments(parser)
 
 
@@ -1303,12 +1311,12 @@ def addIndividualsGetParser(subparsers):
     addGetArguments(parser)
 
 
-def addBioSamplesSearchParser(subparsers):
+def addBiosamplesSearchParser(subparsers):
     parser = subparsers.add_parser(
         "biosamples-search",
         description="Search for biosamples",
         help="Search for biosamples.")
-    parser.set_defaults(runner=SearchBioSamplesRunner)
+    parser.set_defaults(runner=SearchBiosamplesRunner)
     addUrlArgument(parser)
     addOutputFormatArgument(parser)
     addPageSizeArgument(parser)
@@ -1392,7 +1400,7 @@ def addReadGroupSetsSearchParser(subparsers):
     parser.set_defaults(runner=SearchReadGroupSetsRunner)
     addUrlArgument(parser)
     addOutputFormatArgument(parser)
-    addBioSampleIdArgument(parser)
+    addBiosampleIdArgument(parser)
     addPageSizeArgument(parser)
     addDatasetIdArgument(parser)
     addNameArgument(parser)
@@ -1405,7 +1413,7 @@ def addCallSetsSearchParser(subparsers):
     parser.set_defaults(runner=SearchCallSetsRunner)
     addUrlArgument(parser)
     addOutputFormatArgument(parser)
-    addBioSampleIdArgument(parser)
+    addBiosampleIdArgument(parser)
     addPageSizeArgument(parser)
     addNameArgument(parser)
     addVariantSetIdArgument(parser)
@@ -1627,8 +1635,8 @@ def getClientParser():
     addFeaturesGetParser(subparsers)
     addFeatureSetsGetParser(subparsers)
     addFeatureSetsSearchParser(subparsers)
-    addBioSamplesSearchParser(subparsers)
-    addBioSamplesGetParser(subparsers)
+    addBiosamplesSearchParser(subparsers)
+    addBiosamplesGetParser(subparsers)
     addIndividualsSearchParser(subparsers)
     addIndividualsGetParser(subparsers)
     addReferenceSetsSearchParser(subparsers)
